@@ -1,0 +1,15 @@
+{
+  "name": "notelyserver",
+  "version": "1.0.0",
+  "description": "Node backend for a note-taking app.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dave Strus",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.13.3"
+  }
+}
