@@ -125,6 +125,143 @@ function NotesController($state, NotesService) {
 </ul>
 ```
 
+_notes.js_
+```js
+NotesService.fetch(function() {
+  $scope.notes = NotesService.get();
+});
+```
+
+# Pass `notesData` into callback.
+
+_notes-service.js_
+```js
+if (callback) {
+  callback(self.notes);
+}
+```
+
+_notes.js_
+```js
+NotesService.fetch(function(notesData) {
+  $scope.notes = notesData;
+});
+```
+
+# Return promise from service
+
+_notes-service.js_
+```js
+self.fetch = function(callback) {
+  return $http.get('http://localhost:3000/notes')
+    .success(function(notesData) {
+      self.notes = notesData;
+    });
+};
+```
+
+_notes.js_
+```js
+NotesService.fetch().success(function(notesData) {
+  $scope.notes = notesData;
+});
+```
+
+# Auto-reload dev server
+
+Use supervisor to detect file changes and reload node/express.
+
+`$ npm install supervisor --save-dev`
+
+```json
+"scripts": {
+  "start": "node app.js",
+  "dev": "node_modules/.bin/supervisor app.js",
+  "test": "echo \"Error: no test specified\" && exit 1"
+}
+```
+
+`$ npm run dev`
+
+> Change JSON and watch server output
+
 # DB
 
 [mongolab](https://mongolab.com/)
+
+* Sign up for mongolab
+* Create a db
+* Create a user
+* Create a `notes` collection
+
+Collections are like tables. Documents are like rows, but they're just JSON-like data.
+
+* Install mongoose.
+
+`$ npm install mongoose --save`
+
+* Connect to db
+* Define schema
+* Create model
+* Retrieve notes
+
+_app.js_
+```js
+var db = require('mongoose');
+
+db.connect('mongodb://mongo:ilove1150@ds051534.mongolab.com:51534/notely');
+
+var NoteSchema = db.Schema({
+  title: String,
+  body_html: String,
+  body_text: String,
+  updated_at: { type: Date, default: Date.now }
+});
+
+var Note = db.model('Note', NoteSchema);
+
+app.get('/notes', function(req, res) {
+  Note.find().then(function(notes) {
+    res.json(notes);
+  });
+});
+```
+
+# Separate db config, schema, and model into separate files.
+
+_config/db.js_
+```js
+var db = require('mongoose');
+db.connect('mongodb://mongo:ilove1150@ds051534.mongolab.com:51534/notely');
+
+module.exports = db;
+```
+
+_models/note-schema.js_
+```js
+var db = require('../config/db');
+
+var NoteSchema = db.Schema({
+  title: String,
+  body_html: String,
+  body_text: String,
+  updated_at: { type: Date, default: Date.now }
+});
+
+module.exports = NoteSchema;
+```
+
+_models/note.js_
+```js
+var db = require('../config/db');
+var NoteSchema = require('./note-schema');
+
+var Note = db.model('Note', NoteSchema);
+
+module.exports = Note;
+```
+
+_app.js_
+```js
+var Note = require('./models/note');
+```

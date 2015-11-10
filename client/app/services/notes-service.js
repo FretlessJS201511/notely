@@ -8,13 +8,10 @@
       self.notes = [];
 
       self.fetch = function(callback) {
-        $http.get('http://localhost:3000/notes')
-        .success(function(notesData) {
-          self.notes = notesData;
-          if (callback) {
-            callback();
-          }
-        });
+        return $http.get('http://localhost:3000/notes')
+          .success(function(notesData) {
+            self.notes = notesData;
+          });
       };
 
       self.get = function() {
