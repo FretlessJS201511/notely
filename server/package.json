@@ -11,7 +11,8 @@
   "author": "Dave Strus",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.13.3"
+    "express": "^4.13.3",
+    "mongoose": "^4.2.5"
   },
   "devDependencies": {
     "supervisor": "^0.9.1"
