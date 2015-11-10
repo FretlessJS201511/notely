@@ -11,12 +11,19 @@ function NotesService($http) {
   // Get all notes from server
   self.fetch = function(callback) {
     $http.get('http://localhost:3000/notes')
-    .success(function(notesData) {
-      self.notes = notesData;
-      if (callback) {
-        callback();
+    .then(
+      // Success callback
+      function(response) {
+        self.notes = response.data;
+        if (callback) {
+          callback(self.notes);
+        }
+      },
+      // Failure callback
+      function(response) {
+        // TODO: Handle failure
       }
-    });
+    );
   };
 
   self.get = function() {
