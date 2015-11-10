@@ -1,7 +1,14 @@
 var express = require('express');
 var app = express();
 
-app.get('/', function(req, res) {
+// Cross-Origin Request (CORS) middleware
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  next();
+});
+
+
+app.get('/notes', function(req, res) {
   res.json([
     {
       title: 'Hardcoded note',
