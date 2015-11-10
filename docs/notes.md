@@ -115,6 +115,16 @@ function NotesController($state, NotesService) {
 }
 ```
 
+# Display notes in the sidebar.
+
+```html
+<ul id="notes">
+  <li ng-repeat="note in notes">
+    {{ note.title }}
+  </li>
+</ul>
+```
+
 # DB
 
 [mongolab](https://mongolab.com/)
