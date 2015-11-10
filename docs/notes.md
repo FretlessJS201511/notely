@@ -265,3 +265,87 @@ _app.js_
 ```js
 var Note = require('./models/note');
 ```
+
+# Wire up the form
+
+_notes-form.html_
+```html
+<form ng-submit="save()">
+  <p>
+    <input type="text" name="title" id="note_title" placeholder="Title your note" ng-model="note.title">
+  </p>
+  <p>
+    <textarea
+      name="body_html"
+      placeholder="Just start typing..."
+      ng-model="note.body_html"></textarea>
+  </p>
+  <div class="form-actions">
+    <input type="submit" name="commit" value="Save" class="btn btn-default">
+  </div>
+</form>
+```
+
+_notes.js_
+```js
+function NotesController($state, $scope, NotesService) {
+  $scope.note = {};
+
+  NotesService.fetch().success(function(notesData) {
+    $scope.notes = notesData;
+  });
+
+  $scope.save = function() {
+    debugger;
+    // NotesService.save($scope.note)
+  };
+
+  $state.go('notes.form');
+}
+```
+
+# Implement the service
+
+_notes-service.js_
+```js
+self.save = function(note) {
+  return $http.post('http://localhost:3000/notes', {
+    note: note
+  });
+};
+```
+
+# Implement the backend
+
+* Allow headers
+
+```js
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  next();
+});
+```
+
+* Install body-parser
+
+`$ npm install body-parser --save`
+
+_app.js_
+```js
+// Body parsing for JSON POST payloads
+var bodyParser = require('body-parser');
+app.use(bodyParser.json());
+
+// ...
+
+app.post('/notes', function(req, res) {
+  var note = new Note({
+    title: req.body.note.title,
+    body_html: req.body.note.body_html
+  });
+
+  note.save().then(function(noteData) {
+    res.json({ message: 'Successfully updated note', note: noteData });
+  });
+});
+```

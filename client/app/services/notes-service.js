@@ -16,6 +16,15 @@
 
       self.get = function() {
         return self.notes;
-      }
+      };
+
+      self.save = function(note) {
+        return $http.post('http://localhost:3000/notes', {
+          note: note
+        })
+          .success(function(result) {
+            self.notes.unshift(result.note);
+          });
+      };
     }
 })();
