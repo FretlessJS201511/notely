@@ -15,8 +15,8 @@
       })
 
       .state('notes.form', {
-          url: '/:noteId',
-          templateUrl: '/notes/notes-form.html'
+        url: '/:noteId',
+        templateUrl: '/notes/notes-form.html'
       });
   }
 
