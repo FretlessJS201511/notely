@@ -5,11 +5,15 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
+    "dev": "node_modules/.bin/supervisor app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Dave Strus",
   "license": "MIT",
   "dependencies": {
     "express": "^4.13.3"
+  },
+  "devDependencies": {
+    "supervisor": "^0.9.1"
   }
 }

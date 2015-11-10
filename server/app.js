@@ -11,11 +11,11 @@ app.use(function(req, res, next) {
 app.get('/notes', function(req, res) {
   res.json([
     {
-      title: 'Hardcoded note',
+      title: 'Hardcoded note!',
       body_html: 'Cool note.'
     },
     {
-      title: 'Super-cool',
+      title: 'Super-groovy',
       body_html: 'Read it and weep.'
     }
   ]);
