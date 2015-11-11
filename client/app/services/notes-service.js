@@ -35,5 +35,28 @@
             self.notes.unshift(result.note);
           });
       };
+
+      self.update = function(note) {
+        return $http.put('http://localhost:3001/notes/' + note._id, {
+          note: {
+            title: note.title,
+            body_html: note.body_html
+          }
+        })
+          .success(function(result) {
+            self.replaceNote(noteData.note);
+          });
+      };
+
+      self.replaceNote = function(note) {
+        for (var i = 0; i < self.notes.length; i++) {
+          if (self.notes[i]._id === note._id) {
+            self.notes[i] = note;
+            // self.notes.splice(i, 1);
+            // self.notes.unshift(note);
+            break;
+          }
+        }
+      };
     }
 })();

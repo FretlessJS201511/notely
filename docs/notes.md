@@ -530,7 +530,39 @@ _notes.html_
 </button>
 ```
 
+# Sort the sidebar by updated_at
+
+```html
+<li ng-repeat="note in notes | orderBy:'-updated_at'">
+```
+
+# Use track by to include duplicates
+
+```html
+<li ng-repeat="note in notes | orderBy:'-updated_at' track by note._id">
+```
+
+# Order notes on the server
+
+
+
 # Implement update on the server
+
+## NotesService#replaceNote
+```js
+self.replaceNote = function(note) {
+  for (var i = 0; i < self.notes.length; i++) {
+    if (self.notes[i]._id === note._id) {
+      // Remove it from its current position...
+      self.notes.splice(i, 1);
+
+      // ...and move it to the top
+      self.notes.unshift(note);
+      break;
+    }
+  }
+};
+```
 
 ## Set timestamp
 
