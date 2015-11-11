@@ -634,7 +634,7 @@ NoteSchema.pre('save', function(next) {
 });
 ```
 
-# Set body_text
+# Sanitize body_html and set body_text
 
 ```shell
 $ npm install sanitize-html --save
