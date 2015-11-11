@@ -31,7 +31,7 @@ function NotesService($http) {
     // Look through `self.notes` for a note with a matching _id.
     for (var i = 0; i < self.notes.length; i++) {
       if (self.notes[i]._id === noteId) {
-        return self.notes[i];
+        return angular.copy(self.notes[i]);
       }
     }
     return {};
