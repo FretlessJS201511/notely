@@ -11,9 +11,9 @@
       .state('notes', {
         url: '/notes',
         resolve: {
-          notesLoaded: function(NotesService) {
+          notesLoaded: ['NotesService', function(NotesService) {
             return NotesService.fetch();
-          }
+          }]
         },
         templateUrl: '/notes/notes.html',
         controller: NotesController
