@@ -2,13 +2,13 @@
   angular.module('notely')
     .service('NotesService', NotesService);
 
-    NotesService.$inject = ['$http', '$state'];
-    function NotesService($http, $state) {
+    NotesService.$inject = ['$http', '$state', 'API_BASE'];
+    function NotesService($http, $state, API_BASE) {
       var self = this;
       self.notes = [];
 
       self.fetch = function(callback) {
-        return $http.get('http://localhost:3001/notes')
+        return $http.get(API_BASE + 'notes')
           .success(function(notesData) {
             self.notes = notesData;
           });
@@ -28,7 +28,7 @@
       };
 
       self.create = function(note) {
-        return $http.post('http://localhost:3001/notes', {
+        return $http.post(API_BASE + 'notes', {
           note: note
         }).then(function(response) {
           self.notes.unshift(response.data.note);
@@ -37,7 +37,7 @@
       };
 
       self.update = function(note) {
-        return $http.put('http://localhost:3001/notes/' + note._id, {
+        return $http.put(API_BASE + 'notes/' + note._id, {
           note: {
             title: note.title,
             body_html: note.body_html

@@ -684,6 +684,38 @@ Redirect after create and update
 # Do something with flash messages.
 
 # Implement delete
+
+## Extract api base path into constant.
+
+_client/app.js_
+```js
+app.constant('API_BASE', 'http://localhost:3001/');
+```
+
+## Dependency-inject it into the service
+
+```js
+NotesService.$inject = ['$http', '$state', 'API_BASE'];
+function NotesService($http, $state, API_BASE) {
+```
+
+## and use it!
+
+```js
+self.fetch = function(callback) {
+  return $http.get(API_BASE + 'notes')
+
+// ...
+
+self.create = function(note) {
+  return $http.post(API_BASE + 'notes', {
+
+// ...
+
+self.update = function(note) {
+  return $http.put(API_BASE + 'notes/' + note._id, {
+```
+
 ## Add font-awesome
 
 # Turn Notes layout into a component/directive.
@@ -698,3 +730,5 @@ Redirect after create and update
 ```shell
 $ npm install bcryptjs --save
 ```
+
+# Deploy to Heroku
