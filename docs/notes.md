@@ -498,8 +498,19 @@ function NotesFormController($scope, $state, NotesService) {
 
 ## ui-sref
 
+_notes.html_
 ```html
 <a class="note" ui-sref="notes.form({noteId:note._id})">{{ note.title }}</a>
+```
+
+# Make the 'New Note' button work.
+
+_notes.html_
+```html
+<button class="new-note btn btn-default"
+  ui-sref="notes.form({noteId: undefined})">
+  New Note
+</button>
 ```
 
 # Implement update on the server
