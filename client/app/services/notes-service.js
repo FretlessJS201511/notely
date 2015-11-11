@@ -45,6 +45,7 @@
         })
           .then(function(response) {
             self.replaceNote(response.data.note);
+            $state.go('notes.form', { noteId: response.data.note._id });
           });
       };
 

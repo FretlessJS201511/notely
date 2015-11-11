@@ -655,6 +655,8 @@ NoteSchema.pre('save', function(next) {
 });
 ```
 
+# Use textAngular for rich-text editing
+
 # Convert 'new' form to 'update' form after saving.
 
 Update $scope.note with the id.
@@ -667,13 +669,15 @@ NotesService.$inject = ['$http', '$state'];
 function NotesService($http, $state) {
 ```
 
-Redirect after creation
+Redirect after create and update
+
 ```js
 }).then(function(response) {
-  self.notes.unshift(response.data.note);
   $state.go('notes.form', { noteId: response.data.note._id });
 });
 ```
+
+> We do this after `update` in part because the body_html may have changed after sanitization.
 
 # Change button text between create and update
 
@@ -682,7 +686,12 @@ Redirect after creation
 # Implement delete
 ## Add font-awesome
 
+# Turn Notes layout into a component/directive.
+# Turn Sidebar into a component/directive.
+
 # Authentication
+
+## Separating server/app.js into multiple files
 
 ## Install bcrypt
 
