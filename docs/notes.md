@@ -544,7 +544,15 @@ _notes.html_
 
 # Order notes on the server
 
+```js
+app.get('/notes', function(req, res) {
+  Note.find().sort({ updated_at: 'desc' }).then(function(notes) {
+    res.json(notes);
+  });
+});
+```
 
+> With Mongo, we can use `-1` in place of `'desc'`.
 
 # Implement update on the server
 
