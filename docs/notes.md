@@ -494,6 +494,23 @@ function NotesFormController($scope, $state, NotesService) {
 }
 ```
 
+# Refactor `findById`
+
+Right now, the sidebar gets updated in real time as we make changes in the form. That won't do.
+
+## angular.copy
+
+```js
+self.findById = function(noteId) {
+  for (var i = 0; i < self.notes.length; i++) {
+    if (self.notes[i]._id === noteId) {
+      return angular.copy(self.notes[i]);
+    }
+  }
+  return {};
+};
+```
+
 # Make the sidebar links work
 
 ## ui-sref
