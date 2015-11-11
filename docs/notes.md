@@ -349,3 +349,125 @@ app.post('/notes', function(req, res) {
   });
 });
 ```
+
+# Extract secrets
+
+```shell
+npm install dotenv --save
+```
+
+Create new file in `server/.env` with the following contents:
+
+```
+DB_URI=foobar
+```
+
+Then require and load that config as early as possible, so it is available everywhere, either at the very top of the file, or immediately after framework requires:
+
+```js
+require('dotenv').load();
+// inside the app.listen callback function
+console.log('DB_URI is: ', process.env.DB_URI);
+```
+
+You should be able to see that the variable was attached to `process.env` just like it was an environment variable passed in like this:
+```shell
+$ DB_URI=foobar node app.js
+```
+
+But without having to remember to add all that stuff every time, and these can be different in development and production (or staging).
+
+Since we don't want to make the same mistake twice, let's add `.env` to our `.gitignore`:
+
+__.gitignore__
+```
+# other stuff...
+.env
+```
+
+And to be kind to other developers (and future you), let's also add a `.env.sample` file with the keys we expect, but no values (or garbage values we don't care about).
+
+__server/.env.sample__
+```
+DB_URI=
+```
+
+And if you really love your team (and your future self), you should add a note to your `README` that you require this to be populated for the app to work. Something like this:
+```markdown
+## Setup
+
+Copy and edit DOTENV configuration
+
+    $ cp server/.env.sample server/.env
+    $ nano/vi/atom server/.env
+```
+
+
+
+
+# END OF TUESDAY
+
+
+
+
+
+
+
+## Update default route to include trailing slash
+
+_client/app/app.js_
+```js
+function config($urlRouterProvider) {
+  $urlRouterProvider.otherwise('/notes/');
+}
+```
+
+## Remove unnecessary redirect in NotesController
+
+_notes.js_
+Remove `$state.go('notes.form');`
+
+
+
+# Notes#show
+
+## NotesService#findById
+
+_notes-service.js_
+```js
+self.findById = function(noteId) {
+  for (var i = 0; i < notes.length; i++) {
+    if (notes[i].id.toString() === noteId) {
+      return notes[i];
+    }
+  }
+  return {};
+}
+```
+
+## NotesFormController
+
+```js
+.state('notes.form', {
+  url: '/{noteId}',
+  templateUrl: '/notes/notes-form.html'
+  controller: NotesFormController
+});
+
+// ...
+
+NotesFormController.$inject = ['$scope', '$state', 'NotesService'];
+function NotesFormController($scope, $state, notes) {
+  $scope.note = notes.findById($state.params.noteId);
+  console.log($scope.note.title);
+}
+```
+
+
+# Authentication
+
+## Install bcrypt
+
+```shell
+$ npm install bcryptjs --save
+```

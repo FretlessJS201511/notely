@@ -24,12 +24,12 @@ app.post('/notes', function(req, res) {
     title: req.body.note.title,
     body_html: req.body.note.body_html
   });
-  
+
   note.save().then(function(noteData) {
     res.json({ message: 'Successfully updated note', note: noteData });
   });
 });
 
-app.listen(3000, function() {
-  console.log('Listening on http://localhost:3000');
+app.listen(3001, function() {
+  console.log('Listening on http://localhost:3001');
 });

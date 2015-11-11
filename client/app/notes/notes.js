@@ -31,8 +31,6 @@
     $scope.save = function() {
       NotesService.save($scope.note);
     };
-
-    $state.go('notes.form');
   }
 })();
 

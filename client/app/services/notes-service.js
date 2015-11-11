@@ -19,7 +19,7 @@
       };
 
       self.save = function(note) {
-        return $http.post('http://localhost:3000/notes', {
+        return $http.post('http://localhost:3001/notes', {
           note: note
         })
           .success(function(result) {
