@@ -8,10 +8,19 @@
       self.notes = [];
 
       self.fetch = function(callback) {
-        return $http.get('http://localhost:3000/notes')
+        return $http.get('http://localhost:3001/notes')
           .success(function(notesData) {
             self.notes = notesData;
           });
+      };
+
+      self.findById = function(noteId) {
+        for (var i = 0; i < self.notes.length; i++) {
+          if (self.notes[i]._id === noteId) {
+            return self.notes[i];
+          }
+        }
+        return {};
       };
 
       self.get = function() {

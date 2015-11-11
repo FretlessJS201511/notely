@@ -405,6 +405,9 @@ Copy and edit DOTENV configuration
 
 
 
+
+
+
 # END OF TUESDAY
 
 
@@ -412,6 +415,10 @@ Copy and edit DOTENV configuration
 
 
 
+# README
+
+
+# Make notes.form the default route
 
 ## Update default route to include trailing slash
 
@@ -427,22 +434,47 @@ function config($urlRouterProvider) {
 _notes.js_
 Remove `$state.go('notes.form');`
 
+# Resolve fetch promise before loading NotesController
 
+```js
+.state('notes', {
+  url: '/notes',
+  resolve: {
+    notesLoaded: function(NotesService) {
+      return NotesService.fetch();
+    }
+  },
+  templateUrl: '/notes/notes.html',
+  controller: NotesController
+})
 
-# Notes#show
+// ...
+
+NotesController['$inject'] = ['$state', '$scope', 'NotesService'];
+function NotesController($state, $scope, NotesService) {
+  $scope.note = {};
+  $scope.notes = NotesService.get();
+
+  $scope.save = function() {
+    NotesService.save($scope.note);
+  };
+}
+```
+
+# Loading an existing note
 
 ## NotesService#findById
 
 _notes-service.js_
 ```js
 self.findById = function(noteId) {
-  for (var i = 0; i < notes.length; i++) {
-    if (notes[i].id.toString() === noteId) {
-      return notes[i];
+  for (var i = 0; i < self.notes.length; i++) {
+    if (self.notes[i]._id === noteId) {
+      return self.notes[i];
     }
   }
   return {};
-}
+};
 ```
 
 ## NotesFormController
@@ -450,18 +482,30 @@ self.findById = function(noteId) {
 ```js
 .state('notes.form', {
   url: '/{noteId}',
-  templateUrl: '/notes/notes-form.html'
+  templateUrl: '/notes/notes-form.html',
   controller: NotesFormController
 });
 
 // ...
 
 NotesFormController.$inject = ['$scope', '$state', 'NotesService'];
-function NotesFormController($scope, $state, notes) {
-  $scope.note = notes.findById($state.params.noteId);
-  console.log($scope.note.title);
+function NotesFormController($scope, $state, NotesService) {
+  $scope.note = NotesService.findById($state.params.noteId);
 }
 ```
+
+# Make the sidebar links work
+
+## ui-sref
+
+```html
+<a class="note" ui-sref="notes.form({noteId:note._id})">{{ note.title }}</a>
+```
+
+# Implement update on the server
+
+## Set timestamp
+
 
 
 # Authentication
