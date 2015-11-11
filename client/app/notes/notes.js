@@ -1,6 +1,7 @@
 (function() {
   angular.module('notely.notes', [
-    'ui.router'
+    'ui.router',
+    'textAngular'
   ])
   .config(notesConfig);
 
