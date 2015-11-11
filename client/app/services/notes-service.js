@@ -67,6 +67,23 @@ function NotesService($http) {
       }
     }
   };
+
+  self.delete = function(note) {
+    var noteDeletePromise = $http.delete('http://localhost:3000/notes/' + note._id);
+    noteDeletePromise.then(function(response) {
+      self.remove(response.data.note);
+    });
+    return noteDeletePromise;
+  };
+
+  self.remove = function(note) {
+    for (var i = 0; i < self.notes.length; i++) {
+      if (self.notes[i]._id === note._id) {
+        self.notes.splice(i, 1);
+        break;
+      }
+    }
+  };
 }
 
 
