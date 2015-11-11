@@ -27,7 +27,7 @@
         return self.notes;
       };
 
-      self.save = function(note) {
+      self.create = function(note) {
         return $http.post('http://localhost:3001/notes', {
           note: note
         })
@@ -43,8 +43,8 @@
             body_html: note.body_html
           }
         })
-          .success(function(result) {
-            self.replaceNote(noteData.note);
+          .then(function(response) {
+            self.replaceNote(response.data.note);
           });
       };
 

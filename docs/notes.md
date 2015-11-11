@@ -554,10 +554,37 @@ app.get('/notes', function(req, res) {
 
 > With Mongo, we can use `-1` in place of `'desc'`.
 
-# Implement update on the server
+# Implement NotesService#update
 
-## NotesService#replaceNote
+* Rename `save` to `create`
+* Update controller
+
+_notes.js_
 ```js
+$scope.save = function() {
+  if ($scope.note._id) {
+    NotesService.update($scope.note);
+  }
+  else {
+    NotesService.create($scope.note);
+  }
+};
+```
+
+_notes-service.js_
+```js
+self.update = function(note) {
+  return $http.put('http://localhost:3001/notes/' + note._id, {
+    note: {
+      title: note.title,
+      body_html: note.body_html
+    }
+  })
+    .then(function(response) {
+      self.replaceNote(response.data.note);
+    });
+};
+
 self.replaceNote = function(note) {
   for (var i = 0; i < self.notes.length; i++) {
     if (self.notes[i]._id === note._id) {
@@ -572,9 +599,65 @@ self.replaceNote = function(note) {
 };
 ```
 
+# Implement update on the server
+
+```js
+app.put('/notes/:id', function(req, res) {
+  Note.findOne({ user: req.user, _id: req.params.id }).then(function(note) {
+    note.title = req.body.note.title;
+    note.body_html = req.body.note.body_html;
+    note.save().then(function() {
+      res.json({ message: 'Saved changes!', note: note });
+    });
+  });
+});
+```
+
+## Allow PUT requests in middleware
+
+```js
+// Allow CORS, more headers, and more HTTP verbs
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+  next();
+});
+```
+
 ## Set timestamp
 
+```js
+NoteSchema.pre('save', function(next) {
+  this.updated_at = Date.now;
+  next();
+});
+```
 
+# Set body_text
+
+```shell
+$ npm install sanitize-html --save
+```
+
+_note-schema.js_
+```js
+var sanitizeHtml = require('sanitize-html');
+
+// ...
+
+NoteSchema.pre('save', function(next) {
+  this.body_html = sanitizeHtml(this.body_html);
+  this.body_text = sanitizeHtml(this.body_html, {
+    allowedTags: [],
+    allowedAttributes: []
+  });
+  this.updated_at = Date.now;
+  next();
+});
+```
+
+# Do something with flash messages.
 
 # Authentication
 
