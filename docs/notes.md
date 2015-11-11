@@ -655,7 +655,7 @@ NoteSchema.pre('save', function(next) {
 });
 ```
 
-# Use textAngular for rich-text editing
+# [Use textAngular for rich-text editing](https://github.com/getfretless/notely-summer2015/wiki/13-Rich-text-editing)
 
 # Convert 'new' form to 'update' form after saving.
 
@@ -716,10 +716,12 @@ self.update = function(note) {
   return $http.put(API_BASE + 'notes/' + note._id, {
 ```
 
-## Add font-awesome
+## [Add font-awesome](https://github.com/getfretless/notely-summer2015/wiki/11-Font-Awesome)
 
 # Turn Notes layout into a component/directive.
 # Turn Sidebar into a component/directive.
+
+# Write focusOn directive.
 
 # Authentication
 
