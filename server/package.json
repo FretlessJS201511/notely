@@ -12,6 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "express": "^4.13.3",
+    "html-to-text": "^1.4.0",
     "mongoose": "^4.2.5",
     "sanitize-html": "^1.11.1"
   },

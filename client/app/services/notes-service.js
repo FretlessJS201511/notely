@@ -2,8 +2,8 @@
   angular.module('notely')
     .service('NotesService', NotesService);
 
-    NotesService.$inject = ['$http'];
-    function NotesService($http) {
+    NotesService.$inject = ['$http', '$state'];
+    function NotesService($http, $state) {
       var self = this;
       self.notes = [];
 
@@ -30,10 +30,10 @@
       self.create = function(note) {
         return $http.post('http://localhost:3001/notes', {
           note: note
-        })
-          .success(function(result) {
-            self.notes.unshift(result.note);
-          });
+        }).then(function(response) {
+          self.notes.unshift(response.data.note);
+          $state.go('notes.form', { noteId: response.data.note._id });
+        });
       };
 
       self.update = function(note) {
@@ -52,8 +52,6 @@
         for (var i = 0; i < self.notes.length; i++) {
           if (self.notes[i]._id === note._id) {
             self.notes[i] = note;
-            // self.notes.splice(i, 1);
-            // self.notes.unshift(note);
             break;
           }
         }

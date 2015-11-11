@@ -574,7 +574,7 @@ $scope.save = function() {
 _notes-service.js_
 ```js
 self.update = function(note) {
-  return $http.put('http://localhost:3001/notes/' + note._id, {
+  return $http.put('http://localhost:3000/notes/' + note._id, {
     note: {
       title: note.title,
       body_html: note.body_html
@@ -637,27 +637,50 @@ NoteSchema.pre('save', function(next) {
 # Sanitize body_html and set body_text
 
 ```shell
-$ npm install sanitize-html --save
+$ npm install sanitize-html html-to-text --save
 ```
 
 _note-schema.js_
 ```js
 var sanitizeHtml = require('sanitize-html');
+var htmlToText = require('html-to-text');
 
 // ...
 
 NoteSchema.pre('save', function(next) {
   this.body_html = sanitizeHtml(this.body_html);
-  this.body_text = sanitizeHtml(this.body_html, {
-    allowedTags: [],
-    allowedAttributes: []
-  });
+  this.body_text = htmlToText.fromString(this.body_html);
   this.updated_at = Date.now;
   next();
 });
 ```
 
+# Convert 'new' form to 'update' form after saving.
+
+Update $scope.note with the id.
+
+* Return the promise from NotesService#create.
+* Dependency inject $state in the service
+
+```js
+NotesService.$inject = ['$http', '$state'];
+function NotesService($http, $state) {
+```
+
+Redirect after creation
+```js
+}).then(function(response) {
+  self.notes.unshift(response.data.note);
+  $state.go('notes.form', { noteId: response.data.note._id });
+});
+```
+
+# Change button text between create and update
+
 # Do something with flash messages.
+
+# Implement delete
+## Add font-awesome
 
 # Authentication
 
