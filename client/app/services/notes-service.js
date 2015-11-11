@@ -47,8 +47,14 @@ function NotesService($http) {
     return noteCreatePromise;
   };
 
-  self.update = function() {
-    // Implement this!
+  self.update = function(note) {
+    var noteUpdatePromise = $http.put('http://localhost:3000/notes/' + note._id, {
+      note: {
+        title: note.title,
+        body_html: note.body_html
+      }
+    });
+    return noteUpdatePromise;
   };
 }
 

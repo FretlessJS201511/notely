@@ -38,10 +38,14 @@
 
     $scope.save = function() {
       // Decide whether to call create or update...
-
-      NotesService.create($scope.note).then(function(response) {
-        $state.go('notes.form', { noteId: response.data.note._id });
-      });
+      if ($scope.note._id) {
+        NotesService.update($scope.note);
+      }
+      else {
+        NotesService.create($scope.note).then(function(response) {
+          $state.go('notes.form', { noteId: response.data.note._id });
+        });
+      }
     };
   }
 })();
