@@ -536,6 +536,23 @@ var user = new User({
 });
 ```
 
+Let's not return the encrypted password in our JSON. We can strip it out before sending the response from the server.
+
+While we're at it, let's get rid of the `__v` property, which is just something that Mongo uses internally. It's of no use to us.
+
+_server/models/user-schema.js_
+```js
+// Override toJSON to exclude fields from Express res.json()
+UserSchema.methods.toJSON = function() {
+  var object = this.toObject();
+  delete object.password_digest;
+  delete object.__v;
+  return object;
+}
+```
+
+
+
 # JSON Web Token (JWT) authentication
 
 From [https://self-issued.info/docs/draft-ietf-oauth-json-web-token.html](https://self-issued.info/docs/draft-ietf-oauth-json-web-token.html)
@@ -635,6 +652,10 @@ Let's persist the current user via local storage as well.
 # Do the interceptor
 
 # Do the server side middleware for the user
+
+# scope notes by user
+
+# more promise stuff
 
 # Turn Notes layout into a component/directive.
 # Turn Sidebar into a component/directive.

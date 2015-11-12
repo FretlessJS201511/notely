@@ -12,4 +12,12 @@ UserSchema.pre('save', function(next) {
   next();
 });
 
+// Override toJSON to exclude fields from Express res.json()
+UserSchema.methods.toJSON = function() {
+  var object = this.toObject();
+  delete object.password_digest;
+  delete object.__v;
+  return object;
+}
+
 module.exports = UserSchema;
