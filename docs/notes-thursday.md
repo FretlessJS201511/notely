@@ -88,6 +88,11 @@ cd client
 npm install --save-dev gulp gulp-babel gulp-sourcemaps gulp-concat gulp-connect
 ```
 
+> Babel 6 is not currently playing nice with our build, so let's manually specify Babel 5.3.x in _package.json_.
+```json
+"gulp-babel": "^5.0",
+```
+
 And add this to a new file named `gulpfile.js`:
 
 ```js
@@ -174,13 +179,190 @@ Yay!!
 And let's commit, since we have something working.
 
 
-
-
-# Authentication
+# Users
 
 ## Sign Up Page
 
-Create a _components_ folder under _client/app_.
+> Note that we wrapping this code in an object to avoid adding things to the global scope.
+
+_client/app/users/users.js_
+```js
+{
+  angular.module('notely')
+  .config(usersConfig);
+
+  usersConfig.$inject = ['$stateProvider'];
+  function usersConfig($stateProvider) {
+    $stateProvider
+      .state('sign-up', {
+        url: '/sign-up',
+        template: '<sign-up></sign-up>'
+      });
+  }
+}
+```
+
+What's up with that funky `<sign-up>` business? It's a directive, but it's not one that Angular gives us. We're going to write it ourselves!
+
+# Custom Directives
+
+Let's create our first custom directive.
+
+From the official documentation:
+
+> At a high level, directives are markers on a DOM element (such as an attribute, element name, comment or CSS class) that tell AngularJS's HTML compiler ($compile) to attach a specified behavior to that DOM element (e.g. via event listeners), or even to transform the DOM element and its children.
+
+Our first custom directive is going to start out doing nothing more than replacing a DOM element with the contents of a template string that we specify.
+
+_client/app/components/sign-up.js_
+```js
+angular.module('notely')
+.directive('signUp', function() {
+  return {
+    templateUrl: '/components/sign-up.html'
+  };
+});
+```
+
+_client/app/components/sign-up.html_
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-6 col-xs-offset-4">
+      <h3>Sign up for Notely</h3>
+      <form id="new_user">
+        <p>
+          <label for="name">Full Name</label><br>
+          <input type="text" name="name" autofocus="autofocus" required>
+        </p>
+        <p>
+          <label for="username">Username</label><br>
+          <input type="text" name="username" required>
+        </p>
+        <p>
+          <label for="password">Password</label><br>
+          <input type="password" name="password" required>
+        </p>
+        <input type="submit" name="commit" value="Sign Up" class="btn btn-default">
+        <span class="login">
+          Already have an account?
+          <a href="#">Log in.</a>
+        </span>
+      </form>
+    </div>
+  </div>
+</div>
+```
+
+Navigate to _/sign-up_ and check it out!
+
+To do anything with the contents of the form, we need to hook it up to something in our code. Since we're designing this as a component, we go about things a little differently.
+
+_client/app/components/sign-up.js_
+```js
+angular.module('notely')
+.directive('signUp', function() {
+  return {
+    scope: {},
+    controller: SignUpController,
+    controllerAs: 'ctrl',
+    bindToController: true,
+    templateUrl: '/components/sign-up.html'
+  };
+});
+```
+
+Let's break this down.
+
+```js
+scope: {}
+```
+
+This isolates the scope of our component. It helps make our component self-contained and allows us to use this directive more than once in a given scope.
+
+```js
+controllerAs: 'ctrl'
+```
+
+`controllerAs` specifies how our controller will be exposed to the template. So we can add properties to the controller itself and access them in the template as properties of `ctrl`, rather than having to inject `$scope` and add properties to it.
+
+We can use it together with `bindToController`, introduced in Angular 1.3, and it basically makes the scope of our component as isolated as possible. This becomes important when we have several on the same page.
+
+> [Read more](http://blog.thoughtram.io/angularjs/2015/01/02/exploring-angular-1.3-bindToController.html)
+
+Hey, let's take advantage of some new ES6 syntax!
+
+## The fat arrow: `=>`
+
+We pass a lot of anonymous functions around in JavaScript...
+
+```js
+.directive('signUp', () => {
+});
+```
+
+> Mention special binding of `this`.
+
+Now we need to write `SignUpController`. We can define it inside our anonymous function, and keep things local. Now is also a good time to introduce ES6 class syntax.
+
+> Mention that it calls it with `new` if the controller is a class.
+
+```js
+angular.module('notely')
+.directive('signUp', () => {
+
+  class SignUpController {
+    constructor() {
+      this.user = {};
+    }
+    submit() {
+      console.log(this.user);
+    }
+  }
+
+  return {
+    scope: {},
+    controller: SignUpController,
+    controllerAs: 'ctrl',
+    bindToController: true,
+    templateUrl: '/components/sign-up.html'
+  };
+});
+```
+
+Now we can bind to `ctrl.user` and `ctrl.submit` in the template.
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-6 col-xs-offset-4">
+      <h3>Sign up for Notely</h3>
+      <form id="new_user" ng-submit="ctrl.submit()">
+        <p>
+          <label for="name">Full Name</label><br>
+          <input type="text" name="name" autofocus="autofocus" ng-model="ctrl.user.name" required>
+        </p>
+        <p>
+          <label for="username">Username</label><br>
+          <input type="text" name="username" ng-model="ctrl.user.username" required>
+        </p>
+        <p>
+          <label for="password">Password</label><br>
+          <input type="password" name="password" ng-model="ctrl.user.password" required>
+        </p>
+        <input type="submit" name="commit" value="Sign Up" class="btn btn-default">
+        <span class="login">
+          Already have an account?
+          <a href="#">Log in.</a>
+        </span>
+      </form>
+    </div>
+  </div>
+</div>
+```
+
+
+
 
 
 
