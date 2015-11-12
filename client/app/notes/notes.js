@@ -56,6 +56,13 @@
         $state.go('notes.form', { noteId: undefined });
       });
     };
+
+    $scope.buttonText = function() {
+      if ($scope.note._id) {
+        return 'Save Changes';
+      }
+      return 'Save';
+    }
   }
 })();
 
