@@ -11,5 +11,5 @@
   config['$inject'] = ['$urlRouterProvider'];
   app.config(config);
 
-  app.constant('API_BASE', 'http://localhost:3000/');
+  app.constant('API_BASE', 'http://localhost:3000/api/v1/');
 })();
