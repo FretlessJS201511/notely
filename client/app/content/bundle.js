@@ -129,7 +129,7 @@ angular.module('notely').service('UsersService', ['$http', 'API_BASE', function 
         return $http.post(API_BASE + 'users', {
           user: user
         }).then(function (response) {
-          alert(response.data.message);
+          alert(response.data.auth_token);
         });
       }
     }]);

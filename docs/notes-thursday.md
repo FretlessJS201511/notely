@@ -380,7 +380,7 @@ angular.module('notely')
         }
       )
       .then((response) => {
-        alert(response.data.message);
+        alert(response.data.user);
       });
     }
   }
@@ -425,7 +425,8 @@ var router = require('express').Router();
 
 router.post('/', function(req, res) {
   res.json({
-    message: 'Thanks for signing up!'
+    message: 'Thanks for signing up!',
+    user: { username: 'hardcoded' }
   });
 });
 
@@ -534,6 +535,56 @@ var user = new User({
   password_digest: bcrypt.hashSync(req.body.user.password)
 });
 ```
+
+# JSON Web Token (JWT) authentication
+
+From [https://self-issued.info/docs/draft-ietf-oauth-json-web-token.html](https://self-issued.info/docs/draft-ietf-oauth-json-web-token.html)
+
+> JSON Web Token (JWT) is a compact, URL-safe means of representing claims to be transferred between two parties. The claims in a JWT are encoded as a JSON object that is used as the payload of a JSON Web Signature (JWS) structure or as the plaintext of a JSON Web Encryption (JWE) structure, enabling the claims to be digitally signed or integrity protected with a Message Authentication Code (MAC) and/or encrypted.
+
+Install the `jsonwebtoken` package.
+
+```shell
+npm install jsonwebtoken --save
+```
+
+Generate a random secret key to sign your server's tokens.
+
+From your server directory:
+
+```shell
+$ node node_modules/bcryptjs/bin/bcrypt [some random garbage]
+```
+
+Copy and paste the output to an environment variable in _.env_ and update your _.env.example_ while you're at it.
+
+```
+JWT_SECRET=\[generate secret key with bcrypt] # keep the leading '\' character to escape the string
+
+```
+
+Require JWT in the users routes file.
+
+_server/routes/users.js_
+```js
+var jwt = require('jsonwebtoken');
+```
+
+Now let's send a token back in our response after we log the user in. We'll set the token to expire in 24 hours.
+
+_server/routes/users.js_
+```js
+user.save().then(function(userData) {
+  var token = jwt.sign(user._id, process.env.JWT_SECRET, { expiresIn: 24*60*60 });
+  res.json({
+    message: 'Thanks for signing up!',
+    user: userData,
+    auth_token: token
+  });
+},
+```
+
+
 
 
 

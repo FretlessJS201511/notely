@@ -9,7 +9,7 @@ angular.module('notely')
         }
       )
       .then((response) => {
-        alert(response.data.message);
+        alert(response.data.auth_token);
       });
     }
   }
