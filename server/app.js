@@ -10,6 +10,7 @@ app.use(require('./middlewares/headers'));
 
 // Routes
 app.use('/notes', require('./routes/notes'));
+app.use('/users', require('./routes/users'));
 
 app.listen(3001, function() {
   console.log('Listening on http://localhost:3001');

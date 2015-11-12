@@ -85,7 +85,7 @@ Follow the instructions app [Babel Gulp setup](https://babeljs.io/docs/setup/#gu
 
 ```shell
 cd client
-npm install --save-dev gulp gulp-babel gulp-sourcemaps gulp-concat gulp-connect
+npm install --save-dev gulp gulp-babel gulp-sourcemaps gulp-concat gulp-connect gulp-plumber
 ```
 
 > Babel 6 is not currently playing nice with our build, so let's manually specify Babel 5.3.x in _package.json_.
@@ -101,6 +101,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var babel = require('gulp-babel');
 var concat = require('gulp-concat');
 var connect = require('gulp-connect');
+var plumber = require('gulp-plumber');
 
 var javascriptFiles = [
   'app/**/*.js', // All files under app, with a `.js` extension
@@ -110,6 +111,7 @@ var javascriptFiles = [
 
 gulp.task('bundle', function() {
   return gulp.src(javascriptFiles)
+    .pipe(plumber()) // Restart gulp on error
     .pipe(sourcemaps.init()) // Let sourcemap watch what we are doing in this pipeline
     .pipe(babel()) // Convert files in pipeline to ES5 so the browser understands it
     .pipe(concat('bundle.js')) // Squish all files together into one file
@@ -361,12 +363,118 @@ Now we can bind to `ctrl.user` and `ctrl.submit` in the template.
 </div>
 ```
 
+Now let's hook this rascal up to a service.
 
+# UsersService
 
+_client/app/services/users-service.js_
+```js
+angular.module('notely')
+.service('UsersService', ['$http', 'API_BASE', ($http, API_BASE) => {
 
+  class UsersService {
+    create(user) {
+      return $http.post(
+        API_BASE + 'users', {
+          user: user
+        }
+      )
+      .then((response) => {
+        alert(response.data.message);
+      });
+    }
+  }
+  return new UsersService();
 
+}]);
+```
 
+Let's inject it into our component's controller, and pass along our user object to the service.
 
+_client/app/components/sign-up.js_
+```js
+angular.module('notely')
+.directive('signUp', ['UsersService', (UsersService) => {
+
+  class SignUpController {
+    constructor() {
+      this.user = {};
+    }
+    submit() {
+      UsersService.create(this.user);
+    }
+  }
+
+  return {
+    scope: {},
+    controller: SignUpController,
+    controllerAs: 'ctrl',
+    bindToController: true,
+    templateUrl: '/components/sign-up.html'
+  };
+}]);
+```
+
+Now back to the backend!
+
+Following the pattern of notes, let's add a routes file with a single route for posting to _/users_. We'll respond with a simple JSON object for the moment.
+
+_server/routes/users.js_
+```js
+var router = require('express').Router();
+
+router.post('/', function(req, res) {
+  res.json({
+    message: 'Thanks for signing up!'
+  });
+});
+
+module.exports = router;
+```
+
+_server/app.js_
+```js
+app.use('/users', require('./routes/users'));
+```
+
+Try it out!
+
+## Saving the user to the database.
+
+Add a schema and a model.
+
+_server/models/user-schema.js_
+```js
+var db = require('../config/db');
+
+var UserSchema = db.Schema({
+  username: { type: String, required: true, unique: true, index: true },
+  name: { type: String, required: true },
+  // password_digest: { type: String, required: true },
+  updated_at: { type: Date, default: Date.now }
+});
+
+UserSchema.pre('save', function(next) {
+  this.updated_at = Date.now();
+  next();
+});
+
+module.exports = UserSchema;
+```
+
+_server/models/user.js_
+```js
+var db = require('../config/db');
+var UserSchema = require('./user-schema');
+var User = db.model('User', UserSchema);
+
+module.exports = User;
+```
+
+Now require the model in the route, and make it work!
+
+```js
+```
 
 ## Install bcrypt
 

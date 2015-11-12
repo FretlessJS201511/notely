@@ -3,6 +3,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var babel = require('gulp-babel');
 var concat = require('gulp-concat');
 var connect = require('gulp-connect');
+var plumber = require('gulp-plumber');
 
 var javascriptFiles = [
   'app/**/*.js', // All files under app, with a `.js` extension
@@ -12,6 +13,7 @@ var javascriptFiles = [
 
 gulp.task('bundle', function() {
   return gulp.src(javascriptFiles)
+    .pipe(plumber()) // Restart gulp on error
     .pipe(sourcemaps.init()) // Let sourcemap watch what we are doing in this pipeline
     .pipe(babel()) // Convert files in pipeline to ES5 so the browser understands it
     .pipe(concat('bundle.js')) // Squish all files together into one file
