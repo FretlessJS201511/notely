@@ -14,6 +14,13 @@
 })();
 'use strict';
 
+angular.module('notely').directive('signUp', function () {
+  return {
+    templateUrl: '/components/sign-up.html'
+  };
+});
+'use strict';
+
 (function () {
 
   angular.module('notely.notes', ['ui.router', 'textAngular']).config(notesConfig);
@@ -163,4 +170,17 @@ function NotesService($http, API_BASE) {
 }
 
 //
+'use strict';
+
+(function () {
+  angular.module('notely').config(usersConfig);
+
+  usersConfig.$inject = ['$stateProvider'];
+  function usersConfig($stateProvider) {
+    $stateProvider.state('sign-up', {
+      url: '/sign-up',
+      template: '<sign-up></sign-up>'
+    });
+  };
+})();
 //# sourceMappingURL=bundle.js.map
