@@ -498,17 +498,42 @@ router.post('/', function(req, res) {
 module.exports = router;
 ```
 
-## Install bcrypt
+# Add an encrypted password digest.
+
+## Add it to the schema.
+
+Uncomment the line defining the `password_digest` field.
+
+_server/models/user-schema.js_
+```js
+  password_digest: { type: String, required: true },
+```
+
+## Install bcryptjs in the server.
+
+Time-based one-way hashing blah blah blah.
 
 ```shell
 $ npm install bcryptjs --save
 ```
 
+Require bcryptjs in the routes file...
 
+_server/routes/users.js_
+```js
+var bcrypt = require('bcryptjs');
+```
 
+and encrypt the submitted password.
 
-
-
+_server/routes/users.js_
+```js
+var user = new User({
+  username: req.body.user.username,
+  name: req.body.user.name,
+  password_digest: bcrypt.hashSync(req.body.user.password)
+});
+```
 
 
 
