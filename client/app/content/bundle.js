@@ -109,6 +109,36 @@ angular.module('notely').directive('signUp', ['UsersService', function (UsersSer
 //
 'use strict';
 
+(function () {
+  angular.module('notely').config(usersConfig);
+
+  usersConfig.$inject = ['$stateProvider'];
+  function usersConfig($stateProvider) {
+    $stateProvider.state('sign-up', {
+      url: '/sign-up',
+      template: '<sign-up></sign-up>'
+    });
+  };
+})();
+'use strict';
+
+angular.module('notely').factory('AuthInterceptor', ['AuthToken', 'API_BASE', function (AuthToken, API_BASE) {
+  return {
+    request: function request(config) {
+      var token = AuthToken.get();
+      if (token && config.url.indexOf(API_BASE) > -1) {
+        config.headers['Authorization'] = token;
+      }
+      return config;
+    }
+  };
+}]);
+
+angular.module('notely').config(['$httpProvider', function ($httpProvider) {
+  return $httpProvider.interceptors.push('AuthInterceptor');
+}]);
+'use strict';
+
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
@@ -302,17 +332,4 @@ angular.module('notely').service('UsersService', ['$http', 'API_BASE', 'AuthToke
 
   return new UsersService();
 }]);
-'use strict';
-
-(function () {
-  angular.module('notely').config(usersConfig);
-
-  usersConfig.$inject = ['$stateProvider'];
-  function usersConfig($stateProvider) {
-    $stateProvider.state('sign-up', {
-      url: '/sign-up',
-      template: '<sign-up></sign-up>'
-    });
-  };
-})();
 //# sourceMappingURL=bundle.js.map

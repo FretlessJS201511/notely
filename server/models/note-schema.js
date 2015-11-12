@@ -6,6 +6,7 @@ var NoteSchema = db.Schema({
   title: String,
   body_html: String,
   body_text: String,
+  user: { type: db.Schema.Types.ObjectId, ref: 'User' },
   updated_at: { type: Date, default: Date.now }
 });
 
