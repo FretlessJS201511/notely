@@ -14,38 +14,6 @@
 })();
 'use strict';
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-angular.module('notely').directive('signUp', ['UsersService', function (UsersService) {
-  var SignUpController = (function () {
-    function SignUpController() {
-      _classCallCheck(this, SignUpController);
-
-      this.user = {};
-    }
-
-    _createClass(SignUpController, [{
-      key: 'submit',
-      value: function submit() {
-        UsersService.create(this.user);
-      }
-    }]);
-
-    return SignUpController;
-  })();
-
-  return {
-    scope: {},
-    controller: SignUpController,
-    controllerAs: 'ctrl',
-    bindToController: true,
-    templateUrl: '/components/sign-up.html'
-  };
-}]);
-'use strict';
-
 (function () {
 
   angular.module('notely.notes', ['ui.router', 'textAngular']).config(notesConfig);
@@ -107,6 +75,45 @@ angular.module('notely').directive('signUp', ['UsersService', function (UsersSer
 })();
 
 //
+'use strict';
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+angular.module('notely').service('AuthToken', ['$window', function ($window) {
+  var AuthToken = (function () {
+    function AuthToken() {
+      _classCallCheck(this, AuthToken);
+
+      this.authToken = $window.localStorage.getItem('authToken');
+    }
+
+    _createClass(AuthToken, [{
+      key: 'set',
+      value: function set(token) {
+        this.authToken = token;
+        $window.localStorage.setItem('authToken', this.authToken);
+      }
+    }, {
+      key: 'get',
+      value: function get() {
+        return this.authToken;
+      }
+    }, {
+      key: 'clear',
+      value: function clear() {
+        this.authToken = undefined;
+        $window.localStorage.removeItem('authToken');
+      }
+    }]);
+
+    return AuthToken;
+  })();
+
+  return new AuthToken();
+}]);
+"use strict";
 'use strict';
 
 angular.module('notely').service('NotesService', NotesService);
@@ -201,7 +208,7 @@ var _createClass = (function () { function defineProperties(target, props) { for
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-angular.module('notely').service('UsersService', ['$http', 'API_BASE', function ($http, API_BASE) {
+angular.module('notely').service('UsersService', ['$http', 'API_BASE', 'AuthToken', function ($http, API_BASE, AuthToken) {
   var UsersService = (function () {
     function UsersService() {
       _classCallCheck(this, UsersService);
@@ -214,7 +221,7 @@ angular.module('notely').service('UsersService', ['$http', 'API_BASE', function 
           user: user
         });
         userPromise.then(function (response) {
-          console.log(response.data.user);
+          AuthToken.set(response.data.auth_token);
         });
         return userPromise;
       }
@@ -224,6 +231,38 @@ angular.module('notely').service('UsersService', ['$http', 'API_BASE', function 
   })();
 
   return new UsersService();
+}]);
+'use strict';
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+angular.module('notely').directive('signUp', ['UsersService', function (UsersService) {
+  var SignUpController = (function () {
+    function SignUpController() {
+      _classCallCheck(this, SignUpController);
+
+      this.user = {};
+    }
+
+    _createClass(SignUpController, [{
+      key: 'submit',
+      value: function submit() {
+        UsersService.create(this.user);
+      }
+    }]);
+
+    return SignUpController;
+  })();
+
+  return {
+    scope: {},
+    controller: SignUpController,
+    controllerAs: 'ctrl',
+    bindToController: true,
+    templateUrl: '/components/sign-up.html'
+  };
 }]);
 'use strict';
 
