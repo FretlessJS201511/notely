@@ -584,11 +584,57 @@ user.save().then(function(userData) {
 },
 ```
 
+Back to the client!
+
+## AuthToken service
+
+Let's make that auth token persist on the client.
+
+_client/app/services/auth-token.js_
+```js
+angular.module('notely')
+  .service('AuthToken', ['$window', ($window) => {
+
+    class AuthToken {
+      constructor() {
+        this.authToken = $window.localStorage.getItem('authToken');
+      }
+      set(token) {
+        this.authToken = token;
+        $window.localStorage.setItem('authToken', this.authToken);
+      }
+      get() {
+        return this.authToken;
+      }
+      clear() {
+        this.authToken = undefined;
+        $window.localStorage.removeItem('authToken');
+      }
+    }
+    return new AuthToken();
+  }]);
+```
+
+Back in `UsersService`, inject `AuthToken` and set it with the token you got back from the server.
+
+```js
+.service('UsersService', ['$http', 'API_BASE', 'AuthToken', ($http, API_BASE, AuthToken) => {
+
+// ...
+
+  .then((response) => {
+    AuthToken.set(response.data.auth_token);
+    console.log(`Gotten: ${AuthToken.get()}`);
+  });
+```
+
+Let's persist the current user via local storage as well.
 
 
 
+# Do the interceptor
 
-
+# Do the server side middleware for the user
 
 # Turn Notes layout into a component/directive.
 # Turn Sidebar into a component/directive.
