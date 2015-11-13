@@ -18,7 +18,7 @@ var _createClass = (function () { function defineProperties(target, props) { for
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-angular.module('notely').directive('signUp', ['UsersService', function (UsersService) {
+angular.module('notely').directive('signUp', ['$state', 'UsersService', function ($state, UsersService) {
   var SignUpController = (function () {
     function SignUpController() {
       _classCallCheck(this, SignUpController);
@@ -29,7 +29,9 @@ angular.module('notely').directive('signUp', ['UsersService', function (UsersSer
     _createClass(SignUpController, [{
       key: 'submit',
       value: function submit() {
-        UsersService.create(this.user);
+        UsersService.create(this.user).then(function (response) {
+          $state.go('notes.form', { noteId: undefined });
+        });
       }
     }]);
 
@@ -52,10 +54,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 angular.module('notely').directive('userLinks', function () {
   var UserLinksController = (function () {
-    function UserLinksController(CurrentUser) {
+    function UserLinksController(CurrentUser, AuthToken) {
       _classCallCheck(this, UserLinksController);
 
       this.CurrentUser = CurrentUser;
+      this.AuthToken = AuthToken;
     }
 
     _createClass(UserLinksController, [{
@@ -68,19 +71,25 @@ angular.module('notely').directive('userLinks', function () {
       value: function signedIn() {
         return !!this.user()._id;
       }
+    }, {
+      key: 'logout',
+      value: function logout() {
+        this.CurrentUser.clear();
+        this.AuthToken.clear();
+      }
     }]);
 
     return UserLinksController;
   })();
 
-  UserLinksController.$inject = ['CurrentUser'];
+  UserLinksController.$inject = ['CurrentUser', 'AuthToken'];
 
   return {
     scope: {},
     controller: UserLinksController,
     controllerAs: 'ctrl',
     bindToController: true,
-    template: '\n      <div class="user-links">\n        <div ng-show="ctrl.signedIn()">\n          Signed in as {{ ctrl.user().name }}\n          |\n          <a href="#">Logout</a>\n        </div>\n      </div>\n    '
+    template: '\n      <div class="user-links">\n        <div ng-show="ctrl.signedIn()">\n          Signed in as {{ ctrl.user().name }}\n          |\n          <a href="#" ng-click="ctrl.logout()">Logout</a>\n        </div>\n      </div>\n    '
   };
 });
 'use strict';
@@ -146,6 +155,19 @@ angular.module('notely').directive('userLinks', function () {
 })();
 
 //
+'use strict';
+
+(function () {
+  angular.module('notely').config(usersConfig);
+
+  usersConfig.$inject = ['$stateProvider'];
+  function usersConfig($stateProvider) {
+    $stateProvider.state('sign-up', {
+      url: '/sign-up',
+      template: '<sign-up></sign-up>'
+    });
+  };
+})();
 'use strict';
 
 angular.module('notely').factory('AuthInterceptor', ['AuthToken', 'API_BASE', function (AuthToken, API_BASE) {
@@ -358,17 +380,4 @@ angular.module('notely').service('UsersService', ['$http', 'API_BASE', 'AuthToke
 
   return new UsersService();
 }]);
-'use strict';
-
-(function () {
-  angular.module('notely').config(usersConfig);
-
-  usersConfig.$inject = ['$stateProvider'];
-  function usersConfig($stateProvider) {
-    $stateProvider.state('sign-up', {
-      url: '/sign-up',
-      template: '<sign-up></sign-up>'
-    });
-  };
-})();
 //# sourceMappingURL=bundle.js.map
