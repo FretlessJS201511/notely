@@ -54,14 +54,28 @@ Require it back in _server/app.js_.
 app.use('/notes', require('./routes/notes'));
 ```
 
+It's not a bad idea to change our mount point to reflect a versioned API actually. Let's do it!
+
+```js
+// Routes
+app.use('/api/v1/notes', require('./routes/notes'));
+```
+
+And thankfully we only need to update one file in the client to reflect this change.
+
+_client/app.js_
+```js
+app.constant('API_BASE', 'http://localhost:3000/api/v1/');
+```
+
 > We no longer need to require the Note model in _app.js_.
 
 ## Extract middleware into separate file.
 
 _server/app.js_
 ```js
-// Middlewares
-app.use(require('./middlewares/headers'));
+// Middleware
+app.use(require('./middleware/headers'));
 ```
 
 _server/middlewares/headers.js_
@@ -85,12 +99,12 @@ Follow the instructions app [Babel Gulp setup](https://babeljs.io/docs/setup/#gu
 
 ```shell
 cd client
-npm install --save-dev gulp gulp-babel gulp-sourcemaps gulp-concat gulp-connect gulp-plumber
+npm install gulp gulp-babel gulp-sourcemaps gulp-concat gulp-connect gulp-plumber --save-dev
 ```
 
 > Babel 6 is not currently playing nice with our build, so let's manually specify Babel 5.3.x in _package.json_.
 ```json
-"gulp-babel": "^5.0",
+"gulp-babel": "^5.3",
 ```
 
 And add this to a new file named `gulpfile.js`:
@@ -135,7 +149,7 @@ gulp.task('default', ['bundle', 'start-webserver', 'watch']);
 Now, fingers crossed, we can run `gulp bundle`, and it will compile and emit that bundle file.
 
 ```shell
-$ gulp # (or node_modules/.bin/gulp)
+$ node_modules/.bin/gulp
 ```
 
 Let's open up bundle.js.map and take a look:
@@ -185,7 +199,7 @@ And let's commit, since we have something working.
 
 ## Sign Up Page
 
-> Note that we wrapping this code in an object to avoid adding things to the global scope.
+> Note that we're wrapping this code in an object to avoid adding things to the global scope.
 
 _client/app/users/users.js_
 ```js
@@ -194,7 +208,7 @@ _client/app/users/users.js_
   .config(usersConfig);
 
   usersConfig.$inject = ['$stateProvider'];
-  function usersConfig($stateProvider) {
+  let usersConfig = function($stateProvider) {
     $stateProvider
       .state('sign-up', {
         url: '/sign-up',
@@ -370,23 +384,22 @@ Now let's hook this rascal up to a service.
 _client/app/services/users-service.js_
 ```js
 angular.module('notely')
-.service('UsersService', ['$http', 'API_BASE', ($http, API_BASE) => {
+  .service('UsersService', ['$http', 'API_BASE', ($http, API_BASE) => {
 
-  class UsersService {
-    create(user) {
-      return $http.post(
-        API_BASE + 'users', {
+    class UsersService {
+      create(user) {
+        let userPromise = $http.post(`${API_BASE}users`, {
           user: user
-        }
-      )
-      .then((response) => {
-        alert(response.data.user);
-      });
+        });
+        userPromise.then((response) => {
+          console.log(response.data.user);
+        });
+        return userPromise;
+      }
     }
-  }
-  return new UsersService();
+    return new UsersService();
 
-}]);
+  }]);
 ```
 
 Let's inject it into our component's controller, and pass along our user object to the service.
@@ -592,7 +605,7 @@ Now let's send a token back in our response after we log the user in. We'll set 
 _server/routes/users.js_
 ```js
 user.save().then(function(userData) {
-  var token = jwt.sign(user._id, process.env.JWT_SECRET, { expiresIn: 24*60*60 });
+  var token = jwt.sign(userData._id, process.env.JWT_SECRET, { expiresIn: 24*60*60 });
   res.json({
     message: 'Thanks for signing up!',
     user: userData,
@@ -629,6 +642,7 @@ angular.module('notely')
       }
     }
     return new AuthToken();
+
   }]);
 ```
 
@@ -647,20 +661,172 @@ Back in `UsersService`, inject `AuthToken` and set it with the token you got bac
 
 Let's persist the current user via local storage as well.
 
+_client/app/services/current-user.js_
+```js
+angular.module('notely')
+  .service('CurrentUser', ['$window', ($window) => {
 
+  class CurrentUser {
+    constructor() {
+      this.currentUser = JSON.parse($window.localStorage.getItem('currentUser'));
+    }
+
+    set(user) {
+      this.currentUser = user;
+      $window.localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+    }
+
+    get() {
+      return this.currentUser || {};
+    }
+
+    clear() {
+      this.currentUser = undefined;
+      $window.localStorage.removeItem('currentUser');
+    }
+  }
+  return new CurrentUser();
+
+}]);
+```
 
 # Do the interceptor
 
+_client/app/services/auth-interceptor.js_
+```js
+    angular.module('notely')
+      .factory('AuthInterceptor', ['AuthToken', 'API_BASE',
+        function(AuthToken, API_BASE) {
+          return {
+            request: function(config) {
+              var token = AuthToken.get();
+              if (token && config.url.indexOf(API_BASE) > -1) {
+                config.headers['Authorization'] = token;
+              }
+              return config;
+            }
+          };
+        }]);
+
+    angular.module('notely')
+      .config(['$httpProvider', function($httpProvider) {
+        return $httpProvider.interceptors.push('AuthInterceptor');
+      }]);
+```
+
 # Do the server side middleware for the user
+
+_server/middleware/add_user_to_request.js_
+```js
+var jwt = require('jsonwebtoken');
+var User = require('../models/user');
+
+module.exports = function(req, res, next) {
+  var authToken = req.headers.authorization;
+  var isLoggingInOrRegistering = req.body.user;
+
+  if (authToken && !isLoggingInOrRegistering) {
+    // Decode user ID from JWT token, and find user
+    jwt.verify(authToken, process.env.JWT_SECRET,
+      function(err, decodedId) {
+        if (decodedId) {
+          User.findOne({ _id: decodedId }).then(function(user) {
+            req['user'] = user;
+            next();
+          });
+        }
+        else {
+          res.sendStatus(401);
+        }
+     });
+  }
+  else {
+    next();
+  }
+};
+```
+
+Require in in _app.js_.
+
+_server/app.js_
+```js
+app.use(require('./middleware/add-user-to-request'));
+```
 
 # scope notes by user
 
-# more promise stuff
+_server/models/note-schema.js_
+```js
+user: { type: db.Schema.Types.ObjectId, ref: 'User' },
+```
+_server/routes/notes.js_
+```js
+var router = require('express').Router();
+var Note = require('../models/note');
+
+// List all notes
+router.get('/', function(req, res) {
+  Note.find({ user: req.user }).sort({ updated_at: -1 }).then(function(notes) {
+    res.json(notes);
+  });
+});
+
+// Create a new note
+router.post('/', function(req, res) {
+  var note = new Note({
+    title: req.body.note.title,
+    body_html: req.body.note.body_html,
+    user: req.user
+  });
+
+  note.save().then(function(noteData) {
+    res.json({
+      message: 'Saved!',
+      note: noteData
+    });
+  });
+});
+
+// Update an existing note
+router.put('/:id', function(req, res) {
+  Note.findOne({ _id: req.params.id, user: req.user }).then(function(note) {
+    note.title = req.body.note.title;
+    note.body_html = req.body.note.body_html;
+    note.save().then(function() {
+      res.json({
+        message: 'Your changes have been saved.',
+        note: note
+      });
+    });
+  });
+});
+
+router.delete('/:id', function(req, res) {
+  Note.findOne({ _id: req.params.id, user: req.user }).then(function(note) {
+    note.remove().then(function() {
+      res.json({
+        message: 'That note has been deleted.',
+        note: note
+      });
+    });
+  });
+});
+module.exports = router;
+
+```
+
+# logout
+
+# login
+
+# user signed in promises
+
+# Write focusOn directive.
 
 # Turn Notes layout into a component/directive.
 # Turn Sidebar into a component/directive.
 
-# Write focusOn directive.
+
 
 
 
