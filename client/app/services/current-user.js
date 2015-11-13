@@ -24,6 +24,10 @@ angular.module('notely')
         this.currentUser = undefined;
         $window.localStorage.removeItem('currentUser');
       }
+
+      isSignedIn() {
+        return !!(this.get()._id);
+      }
     }
     return new CurrentUser();
 

@@ -139,8 +139,22 @@ angular.module('notely').directive('userLinks', function () {
     $stateProvider.state('notes', {
       url: '/notes',
       resolve: {
-        notesLoaded: ['NotesService', function (NotesService) {
-          return NotesService.fetch();
+        notesLoaded: ['$state', '$q', '$timeout', 'NotesService', 'CurrentUser', function ($state, $q, $timeout, NotesService, CurrentUser) {
+          var deferred = $q.defer();
+          $timeout(function () {
+            if (CurrentUser.isSignedIn()) {
+              NotesService.fetch().then(function () {
+                deferred.resolve();
+              }, function () {
+                deferred.reject();
+                $state.go('sign-in');
+              });
+            } else {
+              deferred.reject();
+              $state.go('sign-in');
+            }
+          });
+          return deferred.promise;
         }]
       },
       templateUrl: '/notes/notes.html',
@@ -191,22 +205,6 @@ angular.module('notely').directive('userLinks', function () {
 })();
 
 //
-'use strict';
-
-(function () {
-  angular.module('notely').config(usersConfig);
-
-  usersConfig.$inject = ['$stateProvider'];
-  function usersConfig($stateProvider) {
-    $stateProvider.state('sign-up', {
-      url: '/sign-up',
-      template: '<sign-up></sign-up>'
-    }).state('sign-in', {
-      url: '/sign-in',
-      template: '<sign-in></sign-in>'
-    });
-  };
-})();
 'use strict';
 
 angular.module('notely').factory('AuthInterceptor', ['AuthToken', 'API_BASE', function (AuthToken, API_BASE) {
@@ -292,6 +290,11 @@ angular.module('notely').service('CurrentUser', ['$window', function ($window) {
       value: function clear() {
         this.currentUser = undefined;
         $window.localStorage.removeItem('currentUser');
+      }
+    }, {
+      key: 'isSignedIn',
+      value: function isSignedIn() {
+        return !!this.get()._id;
       }
     }]);
 
@@ -431,4 +434,20 @@ angular.module('notely').service('UsersService', ['$http', 'API_BASE', 'AuthToke
 
   return new UsersService();
 }]);
+'use strict';
+
+(function () {
+  angular.module('notely').config(usersConfig);
+
+  usersConfig.$inject = ['$stateProvider'];
+  function usersConfig($stateProvider) {
+    $stateProvider.state('sign-up', {
+      url: '/sign-up',
+      template: '<sign-up></sign-up>'
+    }).state('sign-in', {
+      url: '/sign-in',
+      template: '<sign-in></sign-in>'
+    });
+  };
+})();
 //# sourceMappingURL=bundle.js.map
