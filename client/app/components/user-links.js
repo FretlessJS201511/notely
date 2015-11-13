@@ -2,7 +2,8 @@ angular.module('notely')
 .directive('userLinks', () => {
 
   class UserLinksController {
-    constructor(CurrentUser, AuthToken) {
+    constructor($state, CurrentUser, AuthToken) {
+      this.$state = $state;
       this.CurrentUser = CurrentUser;
       this.AuthToken = AuthToken;
     }
@@ -18,9 +19,10 @@ angular.module('notely')
     logout() {
       this.CurrentUser.clear();
       this.AuthToken.clear();
+      this.$state.go('sign-in');
     }
   }
-  UserLinksController.$inject = ['CurrentUser', 'AuthToken'];
+  UserLinksController.$inject = ['$state', 'CurrentUser', 'AuthToken'];
 
   return {
     scope: {},

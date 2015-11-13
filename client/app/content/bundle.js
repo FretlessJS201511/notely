@@ -88,9 +88,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 angular.module('notely').directive('userLinks', function () {
   var UserLinksController = (function () {
-    function UserLinksController(CurrentUser, AuthToken) {
+    function UserLinksController($state, CurrentUser, AuthToken) {
       _classCallCheck(this, UserLinksController);
 
+      this.$state = $state;
       this.CurrentUser = CurrentUser;
       this.AuthToken = AuthToken;
     }
@@ -110,13 +111,14 @@ angular.module('notely').directive('userLinks', function () {
       value: function logout() {
         this.CurrentUser.clear();
         this.AuthToken.clear();
+        this.$state.go('sign-in');
       }
     }]);
 
     return UserLinksController;
   })();
 
-  UserLinksController.$inject = ['CurrentUser', 'AuthToken'];
+  UserLinksController.$inject = ['$state', 'CurrentUser', 'AuthToken'];
 
   return {
     scope: {},
@@ -189,6 +191,22 @@ angular.module('notely').directive('userLinks', function () {
 })();
 
 //
+'use strict';
+
+(function () {
+  angular.module('notely').config(usersConfig);
+
+  usersConfig.$inject = ['$stateProvider'];
+  function usersConfig($stateProvider) {
+    $stateProvider.state('sign-up', {
+      url: '/sign-up',
+      template: '<sign-up></sign-up>'
+    }).state('sign-in', {
+      url: '/sign-in',
+      template: '<sign-in></sign-in>'
+    });
+  };
+})();
 'use strict';
 
 angular.module('notely').factory('AuthInterceptor', ['AuthToken', 'API_BASE', function (AuthToken, API_BASE) {
@@ -413,20 +431,4 @@ angular.module('notely').service('UsersService', ['$http', 'API_BASE', 'AuthToke
 
   return new UsersService();
 }]);
-'use strict';
-
-(function () {
-  angular.module('notely').config(usersConfig);
-
-  usersConfig.$inject = ['$stateProvider'];
-  function usersConfig($stateProvider) {
-    $stateProvider.state('sign-up', {
-      url: '/sign-up',
-      template: '<sign-up></sign-up>'
-    }).state('sign-in', {
-      url: '/sign-in',
-      template: '<sign-in></sign-in>'
-    });
-  };
-})();
 //# sourceMappingURL=bundle.js.map
