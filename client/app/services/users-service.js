@@ -13,6 +13,17 @@ angular.module('notely')
         });
         return userPromise;
       }
+
+      login(user) {
+        let loginPromise = $http.post(`${API_BASE}sessions`, {
+          user: user
+        });
+        loginPromise.then((response) => {
+          AuthToken.set(response.data.auth_token);
+          CurrentUser.set(response.data.user);
+        });
+        return loginPromise;
+      }
     }
     return new UsersService();
 

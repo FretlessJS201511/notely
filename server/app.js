@@ -10,6 +10,7 @@ app.use(require('./middleware/add-user-to-request'));
 
 app.use('/api/v1/notes', require('./routes/notes'));
 app.use('/api/v1/users', require('./routes/users'));
+app.use('/api/v1/sessions', require('./routes/sessions'));
 
 app.listen(3000, function() {
   console.log('Listening on http://localhost:3000');
