@@ -2,7 +2,8 @@
 
   angular.module('notely.notes', [
     'ui.router',
-    'textAngular'
+    'textAngular',
+    'flash'
   ])
   .config(notesConfig);
 
@@ -58,8 +59,8 @@
     $scope.notes = NotesService.get();
   }
 
-  NotesFormController.$inject = ['$scope', '$state', 'NotesService'];
-  function NotesFormController($scope, $state, NotesService) {
+  NotesFormController.$inject = ['$scope', '$state', 'Flash', 'NotesService'];
+  function NotesFormController($scope, $state, Flash, NotesService) {
     $scope.note = NotesService.findById($state.params.noteId);
 
     $scope.save = function() {
@@ -67,6 +68,10 @@
       if ($scope.note._id) {
         NotesService.update($scope.note).then(function(response) {
           $scope.note = angular.copy(response.data.note);
+          Flash.create('success', response.data.message);
+        },
+        function(response) {
+          Flash.create('danger', response.data);
         });
       }
       else {

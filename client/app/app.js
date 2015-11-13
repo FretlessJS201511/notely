@@ -1,7 +1,8 @@
 (function() {
   var app = angular.module('notely', [
     'ui.router',
-    'notely.notes'
+    'notely.notes',
+    'flash'
   ]);
 
   function config($urlRouterProvider) {

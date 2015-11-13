@@ -1,7 +1,7 @@
 'use strict';
 
 (function () {
-  var app = angular.module('notely', ['ui.router', 'notely.notes']);
+  var app = angular.module('notely', ['ui.router', 'notely.notes', 'flash']);
 
   function config($urlRouterProvider) {
     $urlRouterProvider.otherwise('/notes/');
@@ -132,7 +132,7 @@ angular.module('notely').directive('userLinks', function () {
 
 (function () {
 
-  angular.module('notely.notes', ['ui.router', 'textAngular']).config(notesConfig);
+  angular.module('notely.notes', ['ui.router', 'textAngular', 'flash']).config(notesConfig);
 
   notesConfig['$inject'] = ['$stateProvider'];
   function notesConfig($stateProvider) {
@@ -172,8 +172,8 @@ angular.module('notely').directive('userLinks', function () {
     $scope.notes = NotesService.get();
   }
 
-  NotesFormController.$inject = ['$scope', '$state', 'NotesService'];
-  function NotesFormController($scope, $state, NotesService) {
+  NotesFormController.$inject = ['$scope', '$state', 'Flash', 'NotesService'];
+  function NotesFormController($scope, $state, Flash, NotesService) {
     $scope.note = NotesService.findById($state.params.noteId);
 
     $scope.save = function () {
@@ -181,6 +181,9 @@ angular.module('notely').directive('userLinks', function () {
       if ($scope.note._id) {
         NotesService.update($scope.note).then(function (response) {
           $scope.note = angular.copy(response.data.note);
+          Flash.create('success', response.data.message);
+        }, function (response) {
+          Flash.create('danger', response.data);
         });
       } else {
         NotesService.create($scope.note).then(function (response) {

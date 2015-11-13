@@ -34,7 +34,11 @@ router.put('/:id', function(req, res) {
         message: 'Your changes have been saved.',
         note: note
       });
-    });
+    },
+    function () {
+      res.send(500, 'Oops! There was a problem saving.');
+    }
+  );
   });
 });
 
