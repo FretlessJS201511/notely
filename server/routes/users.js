@@ -18,6 +18,8 @@ router.post('/', function(req, res) {
         expiresIn: 60*60*24
       })
     });
+  }, function(err) {
+    res.status(422).send('Oops! There was a problem saving that user.')
   });
 });
 

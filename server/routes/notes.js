@@ -36,7 +36,7 @@ router.put('/:id', function(req, res) {
       });
     },
     function () {
-      res.send(500, 'Oops! There was a problem saving.');
+      res.send(500).body('Oops! There was a problem saving.');
     }
   );
   });

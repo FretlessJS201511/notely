@@ -52,7 +52,7 @@ var _createClass = (function () { function defineProperties(target, props) { for
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-angular.module('notely').directive('signUp', ['$state', 'UsersService', function ($state, UsersService) {
+angular.module('notely').directive('signUp', ['$state', 'Flash', 'UsersService', function ($state, Flash, UsersService) {
   var SignUpController = (function () {
     function SignUpController() {
       _classCallCheck(this, SignUpController);
@@ -65,6 +65,9 @@ angular.module('notely').directive('signUp', ['$state', 'UsersService', function
       value: function submit() {
         UsersService.create(this.user).then(function (response) {
           $state.go('notes.form', { noteId: undefined });
+          Flash.create('success', response.data.message);
+        }, function (response) {
+          Flash.create('danger', response.data);
         });
       }
     }]);
