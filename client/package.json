@@ -18,7 +18,7 @@
   "scripts": {
     "start": "node_modules/.bin/gulp",
     "prestart": "npm install",
-    "postinstall": "bower install",
+    "postinstall": "node_modules/.bin/bower install",
     "preupdate-webdriver": "npm install"
   }
 }
