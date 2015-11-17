@@ -10,7 +10,7 @@
   config['$inject'] = ['$urlRouterProvider'];
   app.config(config);
 
-  app.constant('API_BASE', 'http://localhost:3000/api/v1/');
+  app.constant('API_BASE', '/api/v1/');
 })();
 'use strict';
 
@@ -52,7 +52,7 @@ var _createClass = (function () { function defineProperties(target, props) { for
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-angular.module('notely').directive('signUp', ['$state', 'UsersService', function ($state, UsersService) {
+angular.module('notely').directive('signUp', ['$state', 'Flash', 'UsersService', function ($state, Flash, UsersService) {
   var SignUpController = (function () {
     function SignUpController() {
       _classCallCheck(this, SignUpController);
@@ -65,6 +65,9 @@ angular.module('notely').directive('signUp', ['$state', 'UsersService', function
       value: function submit() {
         UsersService.create(this.user).then(function (response) {
           $state.go('notes.form', { noteId: undefined });
+          Flash.create('success', response.data.message);
+        }, function (response) {
+          Flash.create('danger', response.data);
         });
       }
     }]);
@@ -134,28 +137,31 @@ angular.module('notely').directive('userLinks', function () {
 
   angular.module('notely.notes', ['ui.router', 'textAngular', 'flash']).config(notesConfig);
 
+  notesLoadedAndUserLoggedIn.$inject = ['$state', '$q', '$timeout', 'NotesService', 'CurrentUser'];
+  function notesLoadedAndUserLoggedIn($state, $q, $timeout, NotesService, CurrentUser) {
+    var deferred = $q.defer();
+    $timeout(function () {
+      if (CurrentUser.isSignedIn()) {
+        NotesService.fetch().then(function () {
+          deferred.resolve();
+        }, function () {
+          deferred.reject();
+          $state.go('sign-in');
+        });
+      } else {
+        deferred.reject();
+        $state.go('sign-in');
+      }
+    });
+    return deferred.promise;
+  }
+
   notesConfig['$inject'] = ['$stateProvider'];
   function notesConfig($stateProvider) {
     $stateProvider.state('notes', {
       url: '/notes',
       resolve: {
-        notesLoaded: ['$state', '$q', '$timeout', 'NotesService', 'CurrentUser', function ($state, $q, $timeout, NotesService, CurrentUser) {
-          var deferred = $q.defer();
-          $timeout(function () {
-            if (CurrentUser.isSignedIn()) {
-              NotesService.fetch().then(function () {
-                deferred.resolve();
-              }, function () {
-                deferred.reject();
-                $state.go('sign-in');
-              });
-            } else {
-              deferred.reject();
-              $state.go('sign-in');
-            }
-          });
-          return deferred.promise;
-        }]
+        notesLoaded: notesLoadedAndUserLoggedIn
       },
       templateUrl: '/notes/notes.html',
       controller: NotesController
@@ -206,8 +212,6 @@ angular.module('notely').directive('userLinks', function () {
     };
   }
 })();
-
-//
 'use strict';
 
 angular.module('notely').factory('AuthInterceptor', ['AuthToken', 'API_BASE', function (AuthToken, API_BASE) {
