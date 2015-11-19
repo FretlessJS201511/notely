@@ -117,3 +117,88 @@ $ heroku logs
 $ heroku config
 $ heroku run bash
 ```
+
+## Consolidation: One-command to rule them all
+
+For apps where the frontend and backend are separated, it makes sense to have separate `package.json` and other configuration files, but when they are combined like this, we should optimize for ease of bootstrapping and development of the application.
+
+Let's move `gulp` build dependencies from `client/package.json` to the main `/package.json`.
+Copy and paste everything `gulp`-related (except `gulp-connect`) into the main `/package.json`
+
+__package.json__
+```js
+"devDependencies": {
+  "gulp": "^3.9.0",
+  "gulp-babel": "^5.3.0",
+  "gulp-concat": "^2.6.0",
+  "gulp-plumber": "^1.0.1",
+  "gulp-sourcemaps": "^1.6.0",
+  "supervisor": "^0.9.1"
+}
+```
+
+Then run `npm install` and copy `client/gulpfile.js` to the app root:
+```shell
+$ npm install
+$ cp client/gulpfile.js .
+```
+
+We'll also want to install `gulp-supervisor` to kick off `supervisor` for our dev server, so we only need to run one command.
+```shell
+$ npm install --save-dev gulp-supervisor
+```
+
+We'll need to change the paths in `gulpfile.js` to point to `client/app/*` instead of `app/*`, and use `gulp-supervisor` in place of `gulp-connect` for the `start-webserver` task:
+_gulpfile.js_
+```js
+var gulp = require('gulp');
+var sourcemaps = require('gulp-sourcemaps');
+var babel = require('gulp-babel');
+var concat = require('gulp-concat');
+var plumber = require('gulp-plumber');
+var supervisor = require('gulp-supervisor');
+
+var javascriptFiles = [
+  'client/app/**/*.js', // All files under app, with a `.js` extension
+  '!client/app/bower_components/**/*', // But excluding files inside `bower_components`
+  '!client/app/content/bundle.*' // and the built bundle.js & .js.map
+];
+
+gulp.task('bundle', function() {
+  return gulp.src(javascriptFiles)
+    .pipe(plumber()) // Restart gulp on error
+    .pipe(sourcemaps.init()) // Let sourcemap watch what we are doing in this pipeline
+    .pipe(babel()) // Convert files in pipeline to ES5 so the browser understands it
+    .pipe(concat('bundle.js')) // Squish all files together into one file
+    .pipe(sourcemaps.write('.')) // Emit sourcemap bundle.js.map for easier debugging
+    .pipe(gulp.dest("client/app/content")); // Save the bundle.js and bundle.js.map in app/content
+});
+
+// Watch for changes to anything under `app`
+gulp.task('watch', function() {
+  gulp.watch('client/app/**/*', ['bundle']);
+});
+
+gulp.task('start-webserver', function() {
+  supervisor('server/app.js');
+});
+
+// Default task when `gulp` runs: bundle, starts web server, then watches for changes
+gulp.task('default', ['bundle', 'start-webserver', 'watch']);
+```
+
+Now, if we've wired everything up correctly, running `gulp` will build our bundle as before, kick off the webserver (with `supervisor` this time), and watch for changes.
+
+Let's also make it so that `npm run dev` starts `gulp`:
+
+_package.json_
+```json
+"dev": "node_modules/.bin/gulp",
+```
+
+If this works for you, and you are confident you want to keep the client and server parts together, feel free to delete these files and folders:
+```shell
+$ rm client/gulpfile.js
+$ rm client/package.json
+$ rm -r client/node_modules
+```
